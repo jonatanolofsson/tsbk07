@@ -1,0 +1,64 @@
+TSBK07 Lab1 Questions
+
+Questions:
+
+    * Where is the origin placed in the on-screen coordinate system?
+I mitten.
+    * Which direction are the X and Y axes pointing in the on-screen coordinate system?
+^
+|
+x->
+
+
+    * The triangle color is controlled from the fragment shader. Would it be possible to control it form the main program? How?
+
+Vi kan skicka in argument via en "in" eller "uniform"
+
+
+Questions:
+
+    * What is the purpose of the "in", "out" and "uniform" modifiers?
+Att skicka data till/från shader-programmen
+    * What is the output of the vertex shader?
+gl_Position säger var en vertex befinner sig.
+    * What does the function glUniformMatrix4fv do?
+Den "binder" data till en "uniform" "variabel" i ett shaderprogram. Uniform är ~static const, dvs read-only från shadern.
+
+
+    * What is the purpose of glutPostRedisplay()?
+Säger åt glut att måla om
+    * What is the frame rate of the animation?
+1000/20 = 50, ca 50 fps.
+    * Did you get a noticable flicker? Did the double buffering help?
+Ja.
+
+    * Did you need to do anything different when uploading the color data?
+Inte direkt. Vi behövde en buffer på GPUn för att lagra datan.
+    * The "in" and "out" modifiers are now used for something different. What?
+vi skickar "in" en färg till varje vertex, denna går sedan "out" till fragment shadern som då får interpolerade värden.
+    * What is this kind of shading called? What could we use otherwise?
+Pass-through shading. Dvs. den gör ingenting med datan, bara skickar vidare från programmet.
+
+    * What problems did you encounter while building the cube?
+Ja
+    * How do you change the facing of a polygon?
+Vänd ordning på index
+
+
+
+
+
+    * Why do we need normal vectors for a model?
+Lightning and culling
+    * What did you do in your fragment shader?
+Convert the normal to a color =)
+    * Should a normal vector always be perpendicular to a certain triangle? If not, why?
+Yes
+    * Now we are using glBindBuffer and glBufferData again. They deal with buffers, but in what way?
+glBindBuffer activates a given buffer, and glBufferData upload data to the selected buffer
+
+    * Did you implement your light calculations in the vertex or fragment shader? So, which kind of shading did you implement?
+    * Some geometry data must be vec4, others are just as well vec3's. Which ones, and why? How about vertices, light source, normal vectors...?
+    * If I render a complex, non-convex shape, back-face culling will have problems. Why?
+
+

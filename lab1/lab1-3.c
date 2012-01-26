@@ -9,6 +9,7 @@
 // Mac uses slightly different paths.
 
 #include "GL_utilities.h"
+#include "math.h"
 
 // Globals
 // Data would normally be read from files
@@ -16,16 +17,28 @@ GLfloat vertices[] = {	-0.0f,-0.0f,0.0f,
 			-0.5f,0.5f,0.0f,
 			0.5f,0.5f,0.0f };
 
+GLfloat myMatrix[] = {  1.0f, 0.0f, 0.0f, 0.5f,
+                        0.0f, 1.0f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 1.0f, 0.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f };
+
 // vertex array object
 unsigned int vertexArrayObjID;
+// Reference to shader program
+GLuint program;
+
+
+void OnTimer(int value)
+{
+    glutPostRedisplay();
+    glutTimerFunc(20, &OnTimer, value);
+}
 
 void init(void)
 {
 	// two vertex buffer objects, used for uploading the
 	unsigned int vertexBufferObjID;
 	unsigned int colorBufferObjID;
-	// Reference to shader program
-	GLuint program;
 
 	dumpInfo();
 
@@ -35,7 +48,7 @@ void init(void)
 	printError("GL inits");
 
 	// Load and compile shader
-	program = loadShaders("lab1-1.vert", "lab1-1.frag");
+	program = loadShaders("lab1-2.vert", "lab1-2.frag");
 	printError("init shader");
 	
 	// Upload geometry to the GPU:
@@ -49,10 +62,12 @@ void init(void)
 	// VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
 	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(glGetAttribLocation(program, "in_Position"), 3, GL_FLOAT, GL_FALSE, 0, 0); 
+	glVertexAttribPointer(glGetAttribLocation(program, "in_Position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "in_Position"));
-	
+
 	// End of upload of geometry
+
+	glutTimerFunc(20, &OnTimer, 0);
 	
 	printError("init arrays");
 }
@@ -65,17 +80,32 @@ void display(void)
 	// clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+	static char dir = 1;
+	if(myMatrix[3] > 1) dir = -1;
+	if(myMatrix[3] < -1) dir = 1; 
+	double t = glutGet(GLUT_ELAPSED_TIME)/100.0;
+	myMatrix[5] = myMatrix[0] = cos(t);
+	myMatrix[1] = -sin(t);
+	myMatrix[4] = sin(t);
+	
+	myMatrix[3] += dir*0.01;
+	
+	// Send in additional params
+	glUniformMatrix4fv(glGetUniformLocation(program, "myMatrix"), 1, GL_FALSE, myMatrix);
+
 	glBindVertexArray(vertexArrayObjID);	// Select VAO
 	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
 	
 	printError("display");
 	
-	glFlush();
+	glutSwapBuffers();
 }
 
 int main(int argc, const char *argv[])
 {
 	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutCreateWindow ("GL3 white triangle example");
 	glutDisplayFunc(display); 
 	init ();

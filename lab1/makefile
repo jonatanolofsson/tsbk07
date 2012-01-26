@@ -1,8 +1,6 @@
-
-all : lab1-1
-
-lab1-1: lab1-1.c GL_utilities.c 
-	gcc -Wall -std=c99 -o lab1-1 -lGL -lglut -DGL_GLEXT_PROTOTYPES lab1-1.c GL_utilities.c 
+$(part): lab1-$(part).c GL_utilities.c 
+	gcc -Wall -std=c99 -o lab1-$(part).elf -lGL -lglut -DGL_GLEXT_PROTOTYPES lab1-$(part).c GL_utilities.c loadobj.c
 
 clean :
-	rm lab1-1
+	$(RM) lab1-*.elf 
+	$(RM) lab1-*.o 
