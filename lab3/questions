@@ -1,0 +1,12 @@
+    * How can you get all four blades to rotate with just one time-dependent rotation matrix?
+    * How do you make the wings follow the body's movements?
+    * What kind of control did you implement?
+    * Can you make this kind of control in some other way than manipulating a "look-at" matrix?
+    * How did you handle the camera matrix for the skybox?
+    * How did you represent the objects? Is this a good way to manage a scene or would you do it differently for a "real" application?
+    * Should lighting be used for the skybox?
+    * How do you generate a vector from the surface to the eye?
+    * Which vectors need renormalization in the fragment shader?
+    * How did you choose to combine the texture colour and the lighting colour?
+    * How did you choose to combine the two textures?
+

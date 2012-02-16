@@ -27,7 +27,7 @@
 #define MILL_SCALE 0.8
 
 #define near 1.0
-#define far 50.0
+#define far 80.0
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -91,14 +91,33 @@ enum windmill_parts_t {
 enum textures {
     GROUND_TEXTURE,
     SKYBOX_TEXTURE,
+    WOOD_TEXTURE,
+    BRICK_TEXTURE,
+    BRICK_CRACK_TEXTURE,
     NUMBER_OF_TEXTURES
 };
 
 GLuint billboards[NUMBER_OF_TEXTURES];
 
+// Color r, g, b and specularity
+GLfloat lightSourcesColors[] = { 1.0f, 0.0f, 0.0f, 10.0f, // Red light
+                                 0.0f, 1.0f, 0.0f, 20.0f, // Green light
+                                 0.0f, 0.0f, 1.0f, 60.0f, // Blue light
+                                 1.0f, 1.0f, 1.0f, 5.0f }; // White light
+
+// Light source direction x, y, z and an unused component (used for indicating positional or directional light)
+GLfloat lightSourcesDirections[] = { 5.0f, 0.0f, 0.0f, 0.0f, // Red light along X
+                                     0.0f, 0.0f, 5.0f, 0.0f, // Green light along Z
+                                    -1.0f, 0.0f, 0.0f, 1.0f, // Blue light along X
+                                     0.0f, 0.0f, -1.0f, 1.0f }; // White light along Z
+
 void init_windmill(windmill_t* w, int n)
 {
     programs[WINDMILL_PROGRAM] = loadShaders("lab3-3.vert", "lab3-3.frag");
+
+    LoadTGATextureSimple("wood.tga", &billboards[WOOD_TEXTURE]);
+    LoadTGATextureSimple("brick.tga", &billboards[BRICK_TEXTURE]);
+    LoadTGATextureSimple("brick-crack.tga", &billboards[BRICK_CRACK_TEXTURE]);
 
     w->bladeangle = 0;
     w->windmill[WALLS] = LoadModelPlus("windmill/windmill-walls.obj", programs[WINDMILL_PROGRAM], "inPosition", "inNormal", "inTexCoord");
@@ -139,6 +158,11 @@ void draw_windmill(windmill_t* w, float dt)
 	glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
 	glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "camMatrix"), 1, GL_TRUE, camMatrix);
 
+    glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "lightSourcesColors"), 1, GL_FALSE, lightSourcesColors);
+    glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "lightSourcesDirections"), 1, GL_FALSE, lightSourcesDirections);
+
+    float camera_position[3]; camera_position[0] = position.x;  camera_position[1] = position.y;  camera_position[2] = position.z;
+	glUniform3fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "camera_position"), 1, camera_position);
 
     w->bladeangle += dt*windspeed/3;
 
@@ -148,6 +172,13 @@ void draw_windmill(windmill_t* w, float dt)
     Mult(work[0], w->bladerotationMatrix, bladeBaseMatrix);
 
     {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, billboards[WOOD_TEXTURE]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, billboards[WOOD_TEXTURE]);
+
+        glUniform1i(glGetUniformLocation(programs[WINDMILL_PROGRAM], "firstTexUnit"), 0);
+        glUniform1i(glGetUniformLocation(programs[WINDMILL_PROGRAM], "secondTexUnit"), 1);
         glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "baseMatrix"), 1, GL_TRUE, bladeBaseMatrix);
         int i = 0;
         for(i = 0; i < 4; ++i) {
@@ -159,13 +190,22 @@ void draw_windmill(windmill_t* w, float dt)
     {
         glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "baseMatrix"), 1, GL_TRUE, w->windmillMDLMatrix[WINDMILL_BASE]);
         int i = 0;
-        for(i = 0; i < 3; ++i) {
+
+        for(i = 1; i < 3; ++i) {
             glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "mdlMatrix"), 1, GL_TRUE, w->windmillMDLMatrix[i]);
             DrawModel(w->windmill[i]);
         }
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, billboards[BRICK_TEXTURE]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, billboards[BRICK_CRACK_TEXTURE]);
+
+        glUniformMatrix4fv(glGetUniformLocation(programs[WINDMILL_PROGRAM], "mdlMatrix"), 1, GL_TRUE, w->windmillMDLMatrix[WALLS]);
+        DrawModel(w->windmill[WALLS]);
     }
 
-	printError("display windmill");
+	//printError("display windmill");
 }
 windmill_t my_windmills[NUMBER_OF_WINDMILLS];
 
@@ -173,50 +213,72 @@ windmill_t my_windmills[NUMBER_OF_WINDMILLS];
 
 void init_skybox(void)
 {
-    skybox = LoadModelPlus("skybox.obj", programs[GROUND_PROGRAM], "inPosition", "inNormal", "inTexCoord");
+    programs[SKYBOX_PROGRAM] = loadShaders("skybox.vert", "skybox.frag");
+    printError("init skybox0");
+    skybox = LoadModelPlus("skybox.obj", programs[SKYBOX_PROGRAM], "inPosition", "inNormal", "inTexCoord");
+    printError("init skybox1");
     LoadTGATextureSimple("SkyBox512.tga", &billboards[SKYBOX_TEXTURE]);
+    printError("init skybox2");
 }
 
 void draw_skybox(void)
 {
 	// Send in additional params
-	glUniformMatrix4fv(glGetUniformLocation(programs[GROUND_PROGRAM], "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-	glUniformMatrix4fv(glGetUniformLocation(programs[GROUND_PROGRAM], "camMatrix"), 1, GL_TRUE, camMatrix);
+	glUseProgram(programs[SKYBOX_PROGRAM]);
+    printError("draw skybox0");
 
+	// Send in additional params
+	glUniformMatrix4fv(glGetUniformLocation(programs[SKYBOX_PROGRAM], "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+	glUniformMatrix4fv(glGetUniformLocation(programs[SKYBOX_PROGRAM], "camMatrix"), 1, GL_TRUE, camMatrix);
+
+    printError("draw skybox1");
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, billboards[SKYBOX_TEXTURE]);
-   	glUniform1i(glGetUniformLocation(programs[GROUND_PROGRAM], "texUnit"), 0); // Texture unit 0
+    printError("draw skybox2");
+   	glUniform1i(glGetUniformLocation(programs[SKYBOX_PROGRAM], "texUnit"), 0); // Texture unit 0
+    printError("draw skybox3");
    	glDisable(GL_DEPTH_TEST);
+   	glDisable(GL_CULL_FACE);
 	DrawModel(skybox);
+    printError("draw skybox4");
 	glEnable(GL_DEPTH_TEST);
+    printError("draw skybox5");
 }
 
 void init_ground(void)
 {
+    programs[GROUND_PROGRAM] = loadShaders("billboard.vert", "billboard.frag");
+    printError("init ground-1");
     LoadTGATextureSimple("grass.tga", &billboards[GROUND_TEXTURE]);
+    printError("init ground0");
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     GLuint vertexBufferID, indexBufferID, texCoordBufferID;
-
+    printError("init ground1");
     glGenVertexArrays(1, &groundVertexArrayObjectID);
 	glGenBuffers(1, &vertexBufferID);
 	glGenBuffers(1, &indexBufferID);
 	glGenBuffers(1, &texCoordBufferID);
 
 	glBindVertexArray(groundVertexArrayObjectID);
+	printError("init ground2");
 
     // VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(groundGlyphPosition), groundGlyphPosition, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(programs[GROUND_PROGRAM], "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(programs[GROUND_PROGRAM], "inPosition"));
+    printError("init ground3");
 
     glBindBuffer(GL_ARRAY_BUFFER, texCoordBufferID);
+    printError("init ground4");
     glBufferData(GL_ARRAY_BUFFER, sizeof(groundTexturePos), groundTexturePos, GL_STATIC_DRAW);
+
     glVertexAttribPointer(glGetAttribLocation(programs[GROUND_PROGRAM], "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	printError("init ground3");
+
 	glEnableVertexAttribArray(glGetAttribLocation(programs[GROUND_PROGRAM], "inTexCoord"));
-	printError("init ground4");
+
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(groundGlyphIndices), groundGlyphIndices, GL_STATIC_DRAW);
@@ -226,29 +288,31 @@ void init_ground(void)
 
 void draw_ground(void)
 {
-    glBindTexture(GL_TEXTURE_2D, billboards[GROUND_TEXTURE]);
-   	glUniform1i(glGetUniformLocation(programs[GROUND_PROGRAM], "texUnit"), 0); // Texture unit 0
-
-   	glBindVertexArray(groundVertexArrayObjectID);	// Select VAO
-	glDrawElements(GL_TRIANGLES, sizeof(groundGlyphIndices)/sizeof(groundGlyphIndices[0]), GL_UNSIGNED_INT, 0L);
-
-	printError("display ground");
-}
-
-void init_billboard(void)
-{
-	programs[GROUND_PROGRAM] = loadShaders("billboard.vert", "billboard.frag");
-	printError("load billboard shader");
-    init_skybox();
-    init_ground();
-}
-void draw_billboard(void)
-{
 	glUseProgram(programs[GROUND_PROGRAM]);
 
 	// Send in additional params
 	glUniformMatrix4fv(glGetUniformLocation(programs[GROUND_PROGRAM], "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
 	glUniformMatrix4fv(glGetUniformLocation(programs[GROUND_PROGRAM], "camMatrix"), 1, GL_TRUE, camMatrix);
+   	float camera_xz_position[3]; camera_xz_position[0] = position.x;  camera_xz_position[1] = 0;  camera_xz_position[2] = position.z;
+	glUniform3fv(glGetUniformLocation(programs[GROUND_PROGRAM], "camera_xz_position"), 1, camera_xz_position);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, billboards[GROUND_TEXTURE]);
+   	glUniform1i(glGetUniformLocation(programs[GROUND_PROGRAM], "texUnit"), 0); // Texture unit 0
+    printError("display ground1");
+   	glBindVertexArray(groundVertexArrayObjectID);	// Select VAO
+	glDrawElements(GL_TRIANGLES, sizeof(groundGlyphIndices)/sizeof(groundGlyphIndices[0]), GL_UNSIGNED_INT, 0L);
+
+	printError("display ground2");
+}
+
+void init_billboard(void)
+{
+    init_skybox();
+    init_ground();
+}
+void draw_billboard(void)
+{
 
     draw_skybox();
     draw_ground();
@@ -304,9 +368,9 @@ void OnTimer(int value)
 
 void init(void)
 {
-    position.x = 0;position.y = 10;position.z = 10;
+    position.x = 10;position.y = 10;position.z = 0;
     windspeed = 0.0;
-    look_at.x = 0.0;look_at.y = 5.0;look_at.z = 0.0;
+    look_at.x = 0.0;look_at.y = 10.0;look_at.z = 0.0;
 
 	dumpInfo();
 
@@ -396,12 +460,16 @@ void keyboard(unsigned char key,int x, int y) {
         windspeed -= .05;
     } else if(key == 'c') {
         windspeed += .05;
+    } else if(key == 'r') {
+        programs[WINDMILL_PROGRAM] = loadShaders("lab3-3.vert", "lab3-3.frag");
+        printf("Recompiled shaders\n");
     }
+
 }
 
 void mousedrag(int x, int y) {
     static const double scale = 10.0;
-    static const double fiscale = 10.0;
+    static const double fiscale = 30.0;
 
     Point3D diff;
     diff.x = look_at.x - position.x;
@@ -411,14 +479,14 @@ void mousedrag(int x, int y) {
     MatrixMultPoint3D(&work[0], &diff, &diff);
     VectorAdd(&position, &diff, &look_at);
     look_at.y -= (float)(y-mouse_click[1])/scale;
-    printf("Dragged to (%d,%d) yielding (%f,%f)\n", x, y, look_at.x, look_at.z);
+    //printf("Dragged to (%d,%d) yielding (%f,%f)\n", x, y, look_at.x, look_at.z);
     mouse_click[0] = x;
     mouse_click[1] = y;
 }
 void mouseclick(int button, int state, int x, int y) {
     mouse_click[0] = x;
     mouse_click[1] = y;
-    printf("Clicked at (%d,%d)\n", x, y);
+    //printf("Clicked at (%d,%d)\n", x, y);
 }
 
 int main(int argc, char *argv[])

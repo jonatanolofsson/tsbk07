@@ -175,9 +175,7 @@ bool LoadTGATexture(char *filename, TextureData *texture)	// Loads A TGA File In
 	glGenTextures(1, &texture[0].texID);			// Generate OpenGL texture IDs
 	glBindTexture(GL_TEXTURE_2D, texture[0].texID);		// Bind Our Texture
 
-//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	// Linear Filtered
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);	// Linear Filtered
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);	// Linear Filtered
+
 	if (texture[0].bpp == 24)						// Was The TGA 24 Bits?
 	{
 		type=GL_RGB;			// If So Set The 'type' To GL_RGB
@@ -185,6 +183,8 @@ bool LoadTGATexture(char *filename, TextureData *texture)	// Loads A TGA File In
 //	gluBuild2DMipmaps(GL_TEXTURE_2D, type, w, h, type, GL_UNSIGNED_BYTE, texture[0].imageData);
 	glTexImage2D(GL_TEXTURE_2D, 0, type, w, h, 0, type, GL_UNSIGNED_BYTE, texture[0].imageData);
     glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);	// Linear Filtered
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	// Linear Filtered
 	return true;				// Texture Building Went Ok, Return True
 }
 

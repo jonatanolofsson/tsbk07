@@ -1,19 +1,41 @@
 #version 150
 
 out vec4 out_Color;
+
 in vec3 v_Color;
 in vec3 v_transformedNormal;
 in vec2 v_TexCoord;
-uniform sampler2D texUnit;
+in vec3 current_position;
+
+uniform sampler2D firstTexUnit;
+uniform sampler2D secondTexUnit;
+
+// Lighting
+uniform mat4 lightSourcesColors;
+uniform mat4 lightSourcesDirections;
+uniform vec3 camera_position;
 
 void main(void)
 {
-	const vec3 light = vec3(0.58, 0.58, 0.58);
-	float shade = clamp(clamp(dot(normalize(v_transformedNormal), light),0,1) + 0.5, 0, 1);
-	//vec4 tmp_Color = texture(texUnit, v_TexCoord);
-//	tmp_Color.x = sin(v_TexCoord.y*10 + 2*t)/2 + 0.5;
-//	tmp_Color.y = cos(v_TexCoord.y*10 + 2*t)/2 + 0.5;
-//	tmp_Color.z = cos(v_TexCoord.x*10 + 2*t)/2 + 0.5;
-	//out_Color = tmp_Color*shade;
-	out_Color = vec4(shade, shade, shade, 1.0);
+    vec3 n = normalize(v_transformedNormal);
+	float ambientLight = 0.2;
+	vec3 color = vec3(ambientLight);
+	vec3 l;
+	for(int i=0; i < 4; i++) {
+	    if(lightSourcesDirections[i][3] > 0.5) { // Directional light
+            l = normalize(-vec3(lightSourcesDirections[i]));
+	    } else { // Positional light
+            l = normalize(vec3(lightSourcesDirections[i]) - current_position);
+	    }
+        vec3 R = normalize(2 * n * dot(n,l) - l);
+
+        vec3 v = normalize(camera_position - current_position);
+        float cosphi = clamp(dot(R, v), 0, 1);
+
+        color += vec3(lightSourcesColors[i])*pow(cosphi, lightSourcesColors[i][3]);
+	}
+	vec4 firstTexture = texture(firstTexUnit, v_TexCoord);
+	vec4 secondTexture = texture(secondTexUnit, v_TexCoord);
+
+    out_Color = vec4(color, 1.0) * mix(firstTexture, secondTexture, 0.2); //+ vec4(ambient, ambient, ambient, 1.0);
 }
