@@ -1,0 +1,24 @@
+---
+directories:
+    root: /home/jonatan/skola/tsbk07-Computer_Graphics/labbar/lab4/
+    element_files: elements/
+    element_objects: build/elements/
+
+window:
+    width: 800
+    height: 600
+
+    near: 1.0
+    far: 80.0
+
+    children:
+        -   id: camera
+            type: camera
+            children:
+                -   id: skybox
+                    type: skybox
+                -   id: ground
+                    type: terrain
+                #~ -   id: flyer
+                    #~ type: flyer
+                    #~ model: bunnyplus.obj
