@@ -16,22 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with CPGL.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef GLIDER_ELEMENT_HPP_
+#define GLIDER_ELEMENT_HPP_
 
 #include "cpgl/cpgl.hpp"
+#include "elements/terrain/terrain.hpp"
 #include <Eigen/Core>
 
 namespace CPGL {
     using namespace core;
-    class Terrain : public BaseElement {
+    class Glider : public BaseElement {
         private:
+            Terrain* terrain;
             GLuint program;
-            GLuint texture;
             Model* object;
-            TextureData ttex;
-
+            Vector2f direction;
         public:
-            Terrain(YAML::Node& c, BaseElement* p);
-            void get_height(Vector3f& position, Vector2f& direction);
+            Glider(YAML::Node& c, BaseElement* p);
+
             void draw();
     };
 }
+
+#endif

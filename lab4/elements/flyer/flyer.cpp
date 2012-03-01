@@ -40,6 +40,6 @@ namespace CPGL {
 extern "C" {
     using namespace CPGL::core;
     BaseElement* factory(YAML::Node& c, BaseElement* p) {
-        return (BaseElement*)new CPGL::Flyer(c,p);
+        return dynamic_cast<BaseElement*>(new CPGL::Flyer(c,p));
     }
 }

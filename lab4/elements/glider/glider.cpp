@@ -17,44 +17,46 @@
  * along with CPGL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <Eigen/Core>
-#include "ground.hpp"
-#include "elements/camera/camera.hpp"
+#include "glider.hpp"
+#include <cmath>
 
 namespace CPGL {
-    void Ground::draw()
+    Glider::Glider(YAML::Node& c, BaseElement* p) : core::BaseElement(c, p) {
+        program = tools::load_shaders("glider", "glider.vert", "glider.frag");
+        object = tools::load_model("glider", config["model"].as<std::string>(), program, "inPosition", "inNormal", "inTexCoord");
+        std::cout << "Getting terrain" << std::endl;
+        terrain = dynamic_cast<Terrain*>(get("ground"));
+        std::cout << "Got terrain: " << terrain << std::endl;
+    }
+
+    void Glider::draw()
     {
-        static const int x = 0; static const int y = 1; static const int z = 2;
-        print_error("display ground00");
         glUseProgram(program);
-        print_error("display ground0");
 
-        Vector3f camera_position = dynamic_cast<Camera*>(parent)->position();
-        glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, camera_position.data());
+        float t = glutGet(GLUT_ELAPSED_TIME)/500.0;
+        glUniform1f(glGetUniformLocation(program, "t"), t);
 
-        camera_position[1] = config["base_level"].as<float>(0.0);
-        base.translation() = camera_position;
+        double R = config["radius"].as<float>(1.0);
+        Vector3f pos;
+        pos <<
+            R * std::sin(t) + config["X"].as<float>(20.0),
+            0,
+            R * std::cos(t) + config["Z"].as<float>(30.0);
+        terrain->get_height(pos, direction);
+        base.translation() = pos;
 
         // Send in additional params
         glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_FALSE, get_projection());
         glUniformMatrix4fv(glGetUniformLocation(program, "baseMatrix"), 1, GL_FALSE, get_base().data());
-        print_error("display ground1");
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(glGetUniformLocation(program, "texUnit"), 0); // Texture unit 0
-        print_error("display ground3");
-        glBindVertexArray(groundVertexArrayObjectID);   // Select VAO
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0L);
-
-        print_error("display ground4");
+        DrawModel(object);
     }
 }
+
 
 extern "C" {
     using namespace CPGL::core;
     BaseElement* factory(YAML::Node& c, BaseElement* p) {
-        return dynamic_cast<BaseElement*>(new CPGL::Ground(c,p));
+        return dynamic_cast<BaseElement*>(new CPGL::Glider(c,p));
     }
 }

@@ -20,13 +20,6 @@
 #include "skybox.hpp"
 
 namespace CPGL {
-
-    Skybox::Skybox(YAML::Node& c, BaseElement* p) : BaseElement(c, p) {
-        program = load_shaders("skybox", "skybox.vert", "skybox.frag");
-        object = load_model("skybox", "skybox.obj", program, "inPosition", "inNormal", "inTexCoord");
-        texture = load_texture("skybox", "SkyBox512.tga");
-    }
-
     void Skybox::draw()
     {
         // Send in additional params
@@ -55,6 +48,6 @@ namespace CPGL {
 extern "C" {
     using namespace CPGL::core;
     BaseElement* factory(YAML::Node& c, BaseElement* p) {
-        return (BaseElement*)new CPGL::Skybox(c,p);
+        return dynamic_cast<BaseElement*>(new CPGL::Skybox(c,p));
     }
 }

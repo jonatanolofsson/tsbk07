@@ -17,6 +17,9 @@
  * along with CPGL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SKYBOX_ELEMENT_HPP_
+#define SKYBOX_ELEMENT_HPP_
+
 #include "cpgl/cpgl.hpp"
 
 namespace CPGL {
@@ -29,7 +32,14 @@ namespace CPGL {
             GLuint texture;
 
         public:
-            Skybox(YAML::Node& c, BaseElement* p);
+            Skybox(YAML::Node& c, BaseElement* p) : BaseElement(c, p) {
+                program = load_shaders("skybox", "skybox.vert", "skybox.frag");
+                object = load_model("skybox", "skybox.obj", program, "inPosition", "inNormal", "inTexCoord");
+                texture = load_texture("skybox", "SkyBox512.tga");
+            }
+
             void draw();
     };
 }
+
+#endif

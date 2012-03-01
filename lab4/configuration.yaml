@@ -14,11 +14,28 @@ window:
     children:
         -   id: camera
             type: camera
+            speed_factor: 3.0
             children:
                 -   id: skybox
                     type: skybox
                 -   id: ground
                     type: terrain
-                #~ -   id: flyer
-                    #~ type: flyer
-                    #~ model: bunnyplus.obj
+                    terrain: fft-terrain.tga
+                    texture: grass.tga
+                    scale: 6
+                -   id: glider
+                    type: glider
+                    model: groundsphere.obj
+                    X: 20.0
+                    Y: 30.0
+                    radius: 5.0
+                -   id: glider2
+                    type: glider
+                    model: groundsphere.obj
+                    X: 20.0
+                    Y: 30.0
+                    radius: 10.0
+                -   id: water
+                    type: ground
+                    texture: water.tga
+                    base_level: 5.0

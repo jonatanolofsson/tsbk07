@@ -17,6 +17,8 @@
  * along with CPGL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GROUND_ELEMENT_HPP_
+#define GROUND_ELEMENT_HPP_
 
 #include "cpgl/cpgl.hpp"
 
@@ -46,7 +48,7 @@ namespace CPGL {
 
                 program = load_shaders("ground", "ground.vert", "ground.frag");
                 print_error("init ground-1");
-                texture = load_texture("ground", "grass.tga");
+                texture = load_texture("ground", config["texture"].as<std::string>("grass.tga"));
                 print_error("init ground0");
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -86,3 +88,5 @@ namespace CPGL {
             void draw();
     };
 }
+
+#endif

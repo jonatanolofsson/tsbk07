@@ -7,6 +7,7 @@ set(SUBDIRS
     skybox
     flyer
     terrain
+    glider
 )
 
 add_definitions(-DGL_GLEXT_PROTOTYPES)
