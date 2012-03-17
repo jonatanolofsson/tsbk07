@@ -20,22 +20,27 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                                             0.0f, 0.0f, -1.0f, 0.0f };
                                             
 GLfloat vertices[] = {	-0.0f,-0.0f,0.0f,
-						-0.5f,0.5f,0.0f,
-						0.5f,0.5f,0.0f };
-						
+						-0.8f,0.8f,0.0f,
+						0.8f,0.8f,0.0f,
+                        -0.07f,-0.02f,-0.02f };
+
 GLuint program;
 GLuint VAO;
+
+GLuint texture;
+GLuint mask;
 
 void init(void)
 {
 	dumpInfo();
-	printError("Dump info");
 
-	glClearColor(0.2,0.2,0.5,0);
+	glClearColor(1.0,0.0,0.0,0);
+    glEnable(GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	
-	program = loadShaders("src/geometry/passthrough.vs", NULL, "src/geometry/white.fs");
+	program = loadShaders("src/geometry/passthrough.vs", "src/geometry/add_one.gs", "src/geometry/white.fs");
 	
 	GLuint VBO;
 	glGenVertexArrays(1, &VAO);
@@ -43,9 +48,21 @@ void init(void)
 	glGenBuffers(1, &VBO);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "inPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0); 
 	glEnableVertexAttribArray(glGetAttribLocation(program, "inPosition"));
+
+    LoadTGATextureSimple("data/grass.tga", &texture);
+    LoadTGATextureSimple("data/grass_mask.tga", &mask);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+
+    
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mask);
+    glUniform1i(glGetUniformLocation(program, "maskUnit"), 1);
 }
 
 void display(void)
@@ -53,7 +70,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_POINTS, 0, 4);
 
 	glfwSwapBuffers();
 }
@@ -61,16 +78,14 @@ void display(void)
 int main(int argc, char *argv[])
 {
 	glfwInit();
-	glfwSetWindowTitle("My Amazing Grass");
-    glfwOpenWindow(300,300, 0,0,0,0,0,0, GLFW_WINDOW);
-    
+    glfwOpenWindow(800,600, 0,0,0,0,0,0, GLFW_WINDOW);
+    glfwSetWindowTitle("My Amazing Grass");
     glewInit();
     
 	init();
 	
 	bool running = true;
-	while( running ){
-	
+	while(running) {
 		display();
 		running = !glfwGetKey( GLFW_KEY_ESC ) &&
 				  glfwGetWindowParam( GLFW_OPENED );

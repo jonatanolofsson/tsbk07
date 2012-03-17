@@ -1,12 +1,14 @@
 #version 150
 
-out vec4 out_Color;
+in vec4 gPosition;
+smooth in vec2 texPosition;
 
-in vec3 v_Color;
-in vec3 v_transformedNormal;
-in vec2 v_TexCoord;
-in vec3 current_position;
+uniform sampler2D texUnit;
+uniform sampler2D maskUnit;
 
-void main(void) {    
-    out_Color = vec4(1.0);
+out vec4 outColor;
+
+void main(){    
+    outColor = texture(maskUnit, texPosition).x * texture(texUnit, texPosition);
+    //outColor = vec4(0.0, 0.0, 0.5, 0.5);
 }
