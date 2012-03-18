@@ -3,7 +3,7 @@ LDFLAGS		:= -I./include -I/usr/include/nvidia-current/ -lGL -lglfw -lGLEW -lpthr
 CFLAGS		:= -O0 -Wall -Wextra -ggdb -std=c++0x
 
 # Manually added subfolders
-MODULES		:= nodes scene util .
+MODULES		:= geometry .
 
 SRC_DIR		:= $(addprefix src/, $(MODULES))
 BIN_DIR		:= ./build
