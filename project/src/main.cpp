@@ -45,11 +45,17 @@ int main(int argc, char *argv[])
                               100, 0,
                               100, 100,
                               0, 100};
-
+    printError("pre made ground");
+    GLuint grassID = 0;
+    LoadTGATextureSimple("data/grass.tga", &grassID);
     GLuint groundProgram = loadShaders("data/shaders/billboard.vert", NULL, "data/shaders/billboard.frag");
-    auto ground = std::shared_ptr<Node>(new MeshNode(groundProgram, groundGlyphPosition, 4u, groundGlyphIndices, 6, groundTexturePos, 8u));
+    MeshNode* tmp = new MeshNode(groundProgram, groundGlyphPosition, 4u, groundGlyphIndices, 6u, groundTexturePos, 8u);
+    tmp->addTexture(grassID, "texUnit");
+    auto ground = std::shared_ptr<Node>(tmp);
+    printError("made ground");
     theScene.add(ground);
+    printError("add ground");
     theScene.add(someGrass);
-    
+    printError("add grass");
     theScene.mainLoop();
 }

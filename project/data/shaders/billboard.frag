@@ -1,11 +1,10 @@
-#version 150
+#version 330 core
 
-out vec4 out_Color;
+layout(location = 0) out vec4 out_Color;
 
 in vec2 v_TexCoord;
 uniform sampler2D texUnit;
 
-void main(void)
-{
+void main(void) {
 	out_Color = texture(texUnit, v_TexCoord);
 }

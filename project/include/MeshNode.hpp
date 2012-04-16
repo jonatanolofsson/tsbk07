@@ -9,15 +9,15 @@
 
 class MeshNode : public Node {
 private:
-    GLuint program;
     GLfloat *mesh;
     GLuint numIndices;
     GLuint VAO;
     std::vector<GLuint> textureIDs;
+    std::vector<std::string> samplers;
 public:
     MeshNode(GLuint, GLfloat[], GLuint, GLuint[], GLuint, GLfloat[], GLuint);
 
-    virtual void addTexture(std::string filename);
+    virtual void addTexture(const GLuint id, const std::string samplerName);
     virtual void vUpdate(double delta);
     virtual void vRender(std::shared_ptr<Camera>);
     virtual ~MeshNode();

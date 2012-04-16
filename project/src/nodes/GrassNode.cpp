@@ -23,7 +23,6 @@ GrassNode::GrassNode(GLuint program, GLfloat seeds[], GLuint numSeeds) {
 	glBufferData(GL_ARRAY_BUFFER, numSeeds*3*sizeof(GLfloat), this->seeds, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "seedPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0); 
 	glEnableVertexAttribArray(glGetAttribLocation(program, "seedPosition"));
-
     
     LoadTGATextureSimple("data/grass.tga", &grassTexture);
     LoadTGATextureSimple("data/grass_mask.tga", &maskTexture);

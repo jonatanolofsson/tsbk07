@@ -1,4 +1,4 @@
-#version 150
+#version 330 core
 
 in vec4 gPosition;
 in vec3 gNormal;
@@ -7,7 +7,7 @@ smooth in vec2 texPosition;
 uniform sampler2D texUnit;
 uniform sampler2D maskUnit;
 
-out vec4 outColor;
+layout(location = 0) out vec4 outColor;
 in float personalRand;
 
 void main(){

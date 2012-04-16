@@ -16,6 +16,7 @@ private:
         this->parent = newParent;
     }    
 protected:
+    GLuint program;
     Node* parent;
     std::list<std::shared_ptr<Node>> children;
 
@@ -29,7 +30,7 @@ protected:
     
 public:
     Node() : parent(nullptr), children(), baseMatrix(Eigen::Affine3f::Identity()) {};
-
+    GLuint getProgram() { return this->program; };
     void addChild(std::shared_ptr<Node> child) {
         child->setParent(this);
         children.push_back(child);

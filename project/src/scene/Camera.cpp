@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "Camera.hpp"
+#include "migl.hpp"
 
 void Camera::setProjection(
             const float near,
@@ -52,6 +53,9 @@ void Camera::update(double delta) {
     // Some things should be event driven, some things indirect.
     // Event driven: Resetting translation
     // Indirect: movement.
+
+    printError("update() updateCamera");
+    
     Eigen::Vector3f displacement = Eigen::Vector3f(0.0, 0.0, 0.0);
     if(glfwGetKey('W'))
         displacement = Eigen::Vector3f::UnitZ();
@@ -72,6 +76,7 @@ void Camera::update(double delta) {
 
     baseMatrix.translation() += displacement * cameraSpeed;
     cameraPosition = baseMatrix.linear().transpose() * baseMatrix.translation();
+    printError("update() calc camPos");
     
     if(glfwGetKey('R'))
         baseMatrix = Eigen::Affine3f::Identity();
