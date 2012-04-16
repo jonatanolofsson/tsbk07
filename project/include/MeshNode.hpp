@@ -13,11 +13,13 @@ private:
     GLfloat *mesh;
     GLuint numIndices;
     GLuint VAO;
+    std::vector<GLuint> textureIDs;
 public:
-    MeshNode(GLuint, GLfloat[], GLuint, GLuint[], GLuint);
+    MeshNode(GLuint, GLfloat[], GLuint, GLuint[], GLuint, GLfloat[], GLuint);
 
-    virtual void vUpdate();
-    virtual void vRender();
+    virtual void addTexture(std::string filename);
+    virtual void vUpdate(double delta);
+    virtual void vRender(std::shared_ptr<Camera>);
     virtual ~MeshNode();
 };
 

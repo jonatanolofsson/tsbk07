@@ -1,5 +1,5 @@
 CC			:= g++
-LDFLAGS		:= -I./include -I/usr/include/nvidia-current/ -lGL -lglfw -lGLEW -lpthread
+LDFLAGS		:= -I./include -lGL -lglfw -lGLEW -lpthread
 CFLAGS		:= -O0 -Wall -Wextra -ggdb -std=c++0x
 
 # Manually added subfolders

@@ -4,6 +4,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include "Camera.hpp"
+
 #ifndef NODE_HPP_
 #define NODE_HPP_
 
@@ -19,10 +21,10 @@ protected:
 
     // Lets start with a stupid/slow solution. Change to push/pop later.
     Eigen::Affine3f baseMatrix;
-    virtual Eigen::Affine3f getBaseMatrix(bool withProjection) {
+    virtual Eigen::Affine3f getBaseMatrix() {
         //std::cout << baseMatrix.matrix() << std::endl << std::endl;
         if(parent == nullptr) return baseMatrix;
-        return parent->getBaseMatrix(withProjection) * baseMatrix;
+        return parent->getBaseMatrix() * baseMatrix;
     }
     
 public:
@@ -33,21 +35,21 @@ public:
         children.push_back(child);
     }
 
-    virtual void vUpdate() {};
-    virtual void vRender() = 0;
+    virtual void vUpdate(double delta) = 0;
+    virtual void vRender(std::shared_ptr<Camera>) = 0;
     virtual ~Node() { children.clear(); };
 
-    void update() {
-        this->vUpdate();
+    void update(double delta) {
+        this->vUpdate(delta);
         for (auto it = children.begin(); it != children.end(); ++it) {
-            (*it)->update();
+            (*it)->update(delta);
         }
     };
 
-    void render() {
-        this->vRender();
+    void render(std::shared_ptr<Camera> camera) {
+        this->vRender(camera);
         for (auto it = children.begin(); it != children.end(); ++it) {
-            (*it)->render();
+            (*it)->render(camera);
         }
     }
 };

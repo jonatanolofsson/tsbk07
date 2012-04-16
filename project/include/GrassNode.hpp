@@ -13,11 +13,15 @@ private:
     GLfloat *seeds;
     GLuint numSeeds;
     GLuint VAO;
+
+    GLuint grassTexture, maskTexture;
+
+    GLfloat windforce;
 public:
     GrassNode(GLuint program, GLfloat seeds[], GLuint numSeeds);
 
-    virtual void vUpdate();
-    virtual void vRender();
+    virtual void vUpdate(double delta);
+    virtual void vRender(std::shared_ptr<Camera>);
     virtual ~GrassNode();
 };
 
