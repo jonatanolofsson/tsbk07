@@ -1,0 +1,25 @@
+---
+directories:
+    root: ../
+    element_files: elements/
+    element_objects: build/elements/
+
+window:
+    width: 800
+    height: 600
+
+    near: 1.0
+    far: 80.0
+
+    children:
+        -   id: camera
+            type: camera
+            speed_factor: 3.0
+            children:
+                -   id: skybox
+                    type: skybox
+                -   id: terrain
+                    type: terrain
+                    terrain: fft-terrain.tga
+                    texture: grass.tga
+                    scale: 6
