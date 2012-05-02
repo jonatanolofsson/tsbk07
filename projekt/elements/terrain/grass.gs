@@ -9,15 +9,18 @@ uniform mat4 cameraMatrix;
 uniform vec3 cameraPosition;
 
 uniform vec3 windforce;
+uniform float time;
 
 out vec4 gPosition;
 out vec3 gNormal;
 smooth out vec2 texPosition;
 
 out float personalRand;
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
 void main(){
-
     // Camera distance
     float cameraDistance = length(vec4(cameraPosition.x, 0.0, cameraPosition.z, 0.0) - gl_in[0].gl_Position);
 
@@ -27,12 +30,15 @@ void main(){
     int lod = clamp(int(round(1 / pow(cameraDistance/10, 2))), 1, 4);
     mat4 totalMatrix = projectionMatrix * baseMatrix;//cameraMatrix;
 
-    // Wind
-    vec4 windVec = vec4(0.2*windforce, 0.0);
 
     // Personalize our blade of grass
     vec4 seedPos = gl_in[0].gl_Position;
     float personal = sin(1.8*fract(seedPos.x) + 1.6*fract(seedPos.z));
+
+    // Wind
+    vec3 windforce_local = windforce;
+    windforce_local.x = sin(time + rand(seedPos.xz));
+    vec4 windVec = vec4(0.2*windforce_local, 0.0);
 
     // Calculations based on personalization
     vec4 width = 0.5*bladeWidth*normalize(vec4(personal, 0.0, personal, 0.0));

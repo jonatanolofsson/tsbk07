@@ -20,8 +20,55 @@
 #include "camera.hpp"
 
 namespace CPGL {
+
+    void Camera::initFBO(const int width, const int height) {
+        tools::print_error("initFBO 1");
+        // FBO
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+        // FBO-texture
+        glGenTextures(1, &renderTexture);
+        glBindTexture(GL_TEXTURE_2D, renderTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        tools::print_error("initFBO 2");
+
+        // FBO Depth
+        glGenRenderbuffers(1, &depthBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+
+        // FBO-depth-texture
+        glGenTextures(1, &depthTexture);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+        tools::print_error("initFBO 3");
+
+        GLenum DrawBuffers[] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT};
+        glDrawBuffers(2, DrawBuffers);
+
+        tools::print_error("initFBO 3.5");
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cerr << "FRAME BUFFER OBJECT WAS NOT OK!" << std::endl;
+        tools::print_error("initFBO 4");
+    }
+
     Camera::Camera(YAML::Node& c, BaseElement* p) : core::BaseElement(c, p) {
-        look_at((Vector3f() << -5,5,-5).finished(), (Vector3f() << 0,0,0).finished(), Vector3f::UnitY());
+        initFBO(800,600);
+        look_at((Vector3f() << 20.5,5.5,20.5).finished(), (Vector3f() << 5,0,5).finished(), Vector3f::UnitY());
     }
 
     void Camera::rotation_from_dxdy(int dx, int dy) {
@@ -64,6 +111,7 @@ namespace CPGL {
         } else return false;
 
         base.translation() -= dposition * config["speed_factor"].as<float>(1.0) * 0.1;
+        //~ std::cout << "Position: " << (base.linear().transpose()*base.translation()).transpose() << std::endl;
         return false;
     }
 
@@ -85,6 +133,16 @@ namespace CPGL {
 
     Vector3f Camera::position() {
         return -base.linear().transpose() * base.translation();
+    }
+
+    void Camera::draw() {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glViewport(0,0,800,600);
+
+        tools::print_error("render() before FBO");
+
+        glClearColor(0.66, 0.72, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 }
 

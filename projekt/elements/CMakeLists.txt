@@ -8,6 +8,7 @@ set(SUBDIRS
     flyer
     terrain
     glider
+    screen
 )
 
 add_definitions(-DGL_GLEXT_PROTOTYPES)

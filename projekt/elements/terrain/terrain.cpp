@@ -222,7 +222,7 @@ namespace CPGL {
     }
 
     void Terrain::draw_grass(const int numSeeds) {
-        static double time = 0;
+        static float time = 0;
         time += 0.05;
         GLfloat windforce = std::sin(time);
 
@@ -242,6 +242,7 @@ namespace CPGL {
         wind = rot * wind;
 
         glUniform3fv(glGetUniformLocation(program[PROGRAM_GRASS], "windforce"), 1, wind.data());
+        glUniform1f(glGetUniformLocation(program[PROGRAM_GRASS], "time"), time);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture[TEXTURE_GRASS]);

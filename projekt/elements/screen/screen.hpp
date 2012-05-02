@@ -17,35 +17,23 @@
  * along with CPGL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CPGL_CAMERA_HPP_
-#define CPGL_CAMERA_HPP_
+#ifndef GROUND_ELEMENT_HPP_
+#define GROUND_ELEMENT_HPP_
 
 #include "cpgl/cpgl.hpp"
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+//~ #include "elements/camera/camera.hpp"
 
 namespace CPGL {
     using namespace core;
     using namespace tools;
-    class Camera : public BaseElement {
-        public:
-            GLuint program, fbo;
-            Model* object;
-            int mouse_click[2];
-            void initFBO(const int width, const int height);
+    class Screen : public BaseElement {
+        private:
+            GLuint VAO, program;
+            //~ Camera* camera;
 
         public:
-            GLuint depthBuffer, depthTexture, renderTexture;
-            Camera(YAML::Node& c, BaseElement* p);
-
+            Screen(YAML::Node& c, BaseElement* p);
             void draw();
-
-            Vector3f position();
-            void rotation_from_dxdy(int dx, int dy);
-
-            bool keyboard(unsigned char key,int x, int y);
-            bool motion(int x, int y);
-            bool mouse(int button, int state, int x, int y);
     };
 }
 

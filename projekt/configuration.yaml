@@ -23,3 +23,5 @@ window:
                     terrain: fft-terrain.tga
                     texture: grass.tga
                     scale: 6
+                -   id: screen
+                    type: screen
