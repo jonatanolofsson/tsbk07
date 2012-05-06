@@ -35,7 +35,7 @@ namespace CPGL {
             void initFBO(const int width, const int height);
 
         public:
-            GLuint depthBuffer, depthTexture, renderTexture;
+            GLuint depthBuffer, depthTexture, renderTexture, positionTexture;
             Camera(YAML::Node& c, BaseElement* p);
 
             void draw();
