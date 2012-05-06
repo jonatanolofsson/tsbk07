@@ -8,6 +8,7 @@ uniform sampler2D texUnit;
 uniform sampler2D maskUnit;
 
 layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec4 outDepth;
 in float personalRand;
 
 void main(){
@@ -31,5 +32,5 @@ void main(){
     // Final write check
     if(alpha < 0.3) discard;
     outColor = 2*texPosition.y*shade*mix(orange, grassColor, personalRand);
-    //outColor = vec4(1.0);
+    outDepth = gPosition;
 }

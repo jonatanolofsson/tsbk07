@@ -14,6 +14,5 @@ void main() {
     vPosition = inPosition;
     v_TexCoord = inTexCoord;
 	gl_Position = baseMatrix * vec4(inPosition, 1.0);
-    
 }
 

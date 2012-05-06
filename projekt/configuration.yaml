@@ -5,8 +5,8 @@ directories:
     element_objects: build/elements/
 
 window:
-    width: 800
-    height: 600
+    width: 1024
+    height: 1024
 
     near: 1.0
     far: 80.0
@@ -22,6 +22,6 @@ window:
                     type: terrain
                     terrain: fft-terrain.tga
                     texture: grass.tga
-                    scale: 6
+                    scale: 8
                 -   id: screen
                     type: screen
