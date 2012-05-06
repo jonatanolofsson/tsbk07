@@ -24,7 +24,7 @@
 
 namespace CPGL {
 
-    Screen::Screen(YAML::Node& c, BaseElement* p) : BaseElement(c, p) {
+    Screen::Screen(YAML::Node& c, BaseElement* p) : BaseElement(c, p), clProgram("screen/blur"), blurrKernel(&clProgram, "blurr") {
         GLfloat positions[] = {-1.0f, -1.0f, 0.0f,
                                         1.0f, -1.0f, 0.0f,
                                         -1.0f,  1.0f, 0.0f,
@@ -66,10 +66,57 @@ namespace CPGL {
         tools::print_error("MeshNode inTexCoord");
 
         tools::print_error("init screen");
+
+
+
+        ///// OpenCL code for blurred texture
+        blurrKernel.local_work_size[0] = 32;
+        blurrKernel.local_work_size[1] = 32;
+        blurrKernel.global_work_size[0] = 1024;
+        blurrKernel.global_work_size[1] = 1024;
+
+        // For some reason this doesnt work.
+        //~ glGenTextures(1, &guassian_texture);
+        //~ glBindTexture(GL_TEXTURE_2D, guassian_texture);
+        //~ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 600, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        // But this does. Kinda.
+        guassian_texture = tools::load_texture("terrain", "grass.tga", GL_TEXTURE3, false);
+        
+        cl_int err;
+        guassian_buffer = clCreateFromGLTexture2D(clProgram.context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, guassian_texture, &err);
+        std::cout << "Creating Guassian buffer: " << CL::error_string(err) << std::endl;
+        std::cout << "Checking status guassian buffer: " << CL::error_string(clGetGLObjectInfo(guassian_buffer, NULL, NULL)) << std::endl;
+
+        sceneCreated = false;
     }
 
     void Screen::draw()
     {
+        glFlush();
+        // Create the blurred image, this is fucking ugly but we cant access the camera untill here so..
+        if(!sceneCreated) {
+            cl_int err;
+            GLuint renderTexture = dynamic_cast<Camera*>(get("camera"))->renderTexture;
+            scene_buffer = clCreateFromGLTexture2D(clProgram.context, CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, renderTexture, &err);
+            std::cout << "Creating shared input image: " << CL::error_string(err) << std::endl;
+            std::cout << "Checking status scene: " << CL::error_string(clGetGLObjectInfo(scene_buffer, NULL, NULL)) << std::endl;
+                
+            err = blurrKernel.set_arg<0>(scene_buffer);
+            err |= blurrKernel.set_arg<1>(guassian_buffer);
+            std::cout << "Setting kernel arguments: " << CL::error_string(err) << std::endl;
+            sceneCreated = true;
+        }
+            
+        
+        blurrKernel.acquire_gl(&scene_buffer);
+        blurrKernel.acquire_gl(&guassian_buffer);
+        blurrKernel.run();
+        blurrKernel.release_gl(&scene_buffer);
+        blurrKernel.release_gl(&guassian_buffer);
+        blurrKernel.finish();
+
+        // Render like normal
+        
         tools::print_error("draw screen 1");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, 800, 600);
@@ -83,10 +130,12 @@ namespace CPGL {
         //~ std::cout << "Draw screen 3 ok" << std::endl;
         glUseProgram(program);
 
-        //~ glUniformMatrix4fv(glGetUniformLocation(this->program, "projectionMatrix"), 1, GL_FALSE, get_projection());
+        glUniformMatrix4fv(glGetUniformLocation(this->program, "projectionMatrix"), 1, GL_FALSE, get_projection());
         //~ glUniformMatrix4fv(glGetUniformLocation(this->program, "cameraMatrix"), 1, GL_FALSE, get_base().data());
         //~ glUniformMatrix4fv(glGetUniformLocation(this->program, "baseMatrix"), 1, GL_FALSE, get_base().data());
         glUniformMatrix4fv(glGetUniformLocation(this->program, "baseMatrix"), 1, GL_FALSE, base.data());
+        
+        glUniform3fv(glGetUniformLocation(this->program, "cameraPosition"), 1, dynamic_cast<Camera*>(get("camera"))->position().data());
 
         //~ static GLenum enums[] = {GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, GL_TEXTURE3 };
 
@@ -97,13 +146,24 @@ namespace CPGL {
         //~ std::cout << "Camera now: " << dynamic_cast<Camera*>(get("camera")) << std::endl;
 
         //~ std::cout << "Draw screen 4 ok" << std::endl;
+
+        
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, dynamic_cast<Camera*>(get("camera"))->renderTexture);
         glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, dynamic_cast<Camera*>(get("camera"))->depthTexture);
-        glUniform1i(glGetUniformLocation(program, "depthUnit"), 1);
+        glUniform1i(glGetUniformLocation(program, "zUnit"), 1);
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, dynamic_cast<Camera*>(get("camera"))->positionTexture);
+        glUniform1i(glGetUniformLocation(program, "depthUnit"), 2);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, guassian_texture);
+        glUniform1i(glGetUniformLocation(program, "blurrUnit"), 3);
 
         tools::print_error("draw screen 5");
         //~ std::cout << "Draw screen 5 ok" << std::endl;

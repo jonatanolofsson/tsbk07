@@ -21,6 +21,7 @@
 #define GROUND_ELEMENT_HPP_
 
 #include "cpgl/cpgl.hpp"
+#include "cpgl/opencl.hpp"
 //~ #include "elements/camera/camera.hpp"
 
 namespace CPGL {
@@ -30,7 +31,14 @@ namespace CPGL {
         private:
             GLuint VAO, program;
             //~ Camera* camera;
+            CL::Host clProgram;
+            CL::Kernel<2> blurrKernel;
+            cl_mem guassian_buffer;
+            cl_mem scene_buffer;
 
+            GLuint guassian_texture;
+
+            bool sceneCreated;
         public:
             Screen(YAML::Node& c, BaseElement* p);
             void draw();

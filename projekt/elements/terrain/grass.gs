@@ -27,7 +27,7 @@ void main(){
     // Constants
     float height = clamp(3 - cameraDistance/20, 0.5, 3);
     float bladeWidth = clamp(0.01 + cameraDistance/20, 0.01, 0.2);
-    int lod = clamp(int(round(1 / pow(cameraDistance/10, 2))), 1, 4);
+    int lod = clamp(int(round(1 / pow(cameraDistance/10, 2))), 1, 3);
     mat4 totalMatrix = projectionMatrix * baseMatrix;//cameraMatrix;
 
 
@@ -58,14 +58,16 @@ void main(){
 
         // Middle point
         vec4 firstSide = (seedPos + heightOffset + windOffset);
-        gl_Position = gPosition = totalMatrix * firstSide;
+        gPosition = firstSide;
+        gl_Position = totalMatrix * gPosition;
         texPosition = vec2(0.5, progress);
         personalRand = personal + progress/10.0;
         gNormal = normalize(cross(vec3(width), nextUp));
         EmitVertex();
 
         // Right point (first side + width)
-        gl_Position = gPosition = totalMatrix * (firstSide + width);
+        gPosition = (firstSide + width);
+        gl_Position =  totalMatrix * gPosition;
         texPosition = vec2(1.0, progress);
         personalRand = personal;
         gNormal = normalize(cross(nextUp, vec3(-1*width)));
@@ -87,14 +89,16 @@ void main(){
 
         // Middle point
         vec4 firstSide = (seedPos + heightOffset + windOffset);
-        gl_Position = gPosition = totalMatrix * firstSide;
+        gPosition =  firstSide;
+        gl_Position =  totalMatrix * gPosition;
         texPosition = vec2(0.5, progress);
         personalRand = personal + progress/10.0;
         gNormal = normalize(cross(nextUp, vec3(-1*width)));
         EmitVertex();
 
         // Left point (first side -width)
-        gl_Position = gPosition = totalMatrix * (firstSide - width);
+        gPosition =  (firstSide - width);
+        gl_Position =  totalMatrix * gPosition;
         texPosition = vec2(0.0, progress);
         personalRand = personal;
         gNormal = normalize(cross(nextUp, vec3(width)));
