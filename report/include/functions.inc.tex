@@ -1,0 +1,22 @@
+\newcommand{\currentchapter}{}
+\newcommand{\figw}[4][]{%
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=#1\linewidth]{\currentchapter/figures/#2}
+    \caption{#3}
+    \label{#4}
+  \end{figure}
+}
+
+%% Math functions
+\renewcommand{\sin}[1]{sin\left(#1\right)}
+\renewcommand{\cos}[1]{cos\left(#1\right)}
+
+%% Initialize new chapter
+\newcommand{\newchapter}[1]{
+    \renewcommand{\currentchapter}{#1}
+    \include*{#1/#1}
+    %~ \clearpage
+}
+
+\newcommand{\matlab}{\textsc{Matlab}}

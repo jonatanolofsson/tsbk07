@@ -1,0 +1,30 @@
+\section{Grass}
+\label{cha:grass}
+The grass rendering was the first part of this project to be finalized.
+The grass rendering uses a OpenGL shader pipeline with the following steps.
+\begin{description}
+    \item[Vertex Shader] Calculates points in the terrain where grass strains should be rendered
+    \item[Geometry Shader] Generates the grass strains
+    \item[Fragment Shader] Paints the grass strains
+\end{description}
+
+Most of the work on generating the grass is done in the geometry shader.
+The geometry shader is fed with the position of the grass seed, which
+is extruded to the full grass strain. As the grass strain is generated - from the bottom-up -
+a modeled wind force is applied to bend the grass-strain with the wind.
+
+To give an even more realistic appearance, each grass strain is associated a
+random phase offset from the applied wind sinusoid.
+This causes each strain to move independently, without removing the sense
+that all strains are moved by a common wind.
+
+%~ \fig{0.3}{strain}{Grass strains are built of two parallell strips of triangles to create a 3D-effect.}{strain}
+
+Depending on the distance between the generated grass strain and the camera,
+different level of details are selected for the grass, to reduce computational
+load on grass strains far away. The higher the level of detail, the more vertices are
+used to build the strain. Each strain is built of two parallell triangle strips in an angle
+to create a 3D-effect on each grass strain. The texture applied to each strain is also selected
+to enhance this 3D-effect, for instance adding shadow in the lower parts of the strain.
+
+%~ \fig{0.8}{grass1}{Grass strains, bent to the applied wind.}{grass1}

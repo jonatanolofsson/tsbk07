@@ -25,7 +25,7 @@ namespace CPGL {
     const int terrain_size_X = 200;
     const int terrain_size_Z = 200;
     const float map_scale = 10;
-    const int extra = -10;
+    const int extra = 10;
 
     using namespace core;
     class Terrain : public BaseElement {
@@ -47,13 +47,14 @@ namespace CPGL {
             GLuint texture[NUMBER_OF_TEXTURES];
 
             GLuint indices_id;
+            GLuint grass_indices_id;
             GLuint normals_id;
             GLuint vertices_id;
             GLuint texture_id;
             int frustum_culling();
             CL::Host clProgram;
             CL::Kernel<1> generate_indices;
-            cl_mem cl_indices;
+            cl_mem cl_indices, cl_grass_indices;
             int number_of_visible_triangles;
             void draw_grass(const int);
             void draw_ground(const int);

@@ -12,7 +12,7 @@ projectionMatrix = [ 2.0*near/(right-left), 0.0, (right+left)/(right-left), 0.0;
                 ];
 
 %% Create camera matrix
-pos = [0;5;0];
+pos = [0;5;15];
 lookAt = [10;3;10];
 up = [0;1;0];
 n = normalize(pos-lookAt);
@@ -112,7 +112,7 @@ for ix = zx
     zy = sort(yx);
     cut = [
             max(0, floor(zy(order_offset+1))) ...
-            min(Zlim(2), ceil(zy(order_offset+2)))]
+            min(Zlim(2), ceil(zy(order_offset+2)))];
     N_add = 2*(cut(2) - cut(1));
     IND(N_INDICES+1:N_INDICES+N_add) = (2*cut(1):2*cut(2)-1) + 2*ix*(N-1); % N-1 triangles..
     N_INDICES = N_INDICES + N_add;
@@ -134,4 +134,4 @@ end
 
 plot(Z(1,[1:4 1]), Z(2,[1:4 1]), 'g');
 % axis equal;
-axis([-200 200 -200 200])
+axis([-20 80 -20 80])

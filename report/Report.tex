@@ -1,0 +1,54 @@
+
+% Main file for collecting the chapters of the report
+%
+% Author: Jonatan Olofsson, jonatan.olofsson@gmail.com
+%
+
+%% Specify document type
+\documentclass[10pt,twoside,a4paper]{article}
+
+%% Specify report metadata
+\title{Real Time Rendering Using Modern GPU Techniques}
+\date{2012-05-13}
+\author{Jonatan Olofsson [jonol402] \\ Mikael Silv\'en [miksi016]}
+\newcommand{\lang}{english}
+\newcommand{\pdfauthor}{Jonatan Olofsson, Mikael Silven}
+\newcommand{\pdftitle}{Real Time Rendering Using Modern GPU Techniques}
+\newcommand{\pdfsubject}{}
+\newcommand{\pdfkeywords}{}
+
+
+%% Include helper files
+\input{include/uses.inc}
+\input{include/pdf.inc}
+\input{include/pheader.inc}
+\input{include/functions.inc}
+\input{include/tikz.inc}
+\input{include/style.inc}
+
+
+%% Begin bringing the document together
+\begin{document}
+
+%% Display titlepage
+\maketitle
+
+%% Display a table of contents.
+% Note that the document has to be built twice after updating
+% the content, for this table to be updated.
+%~ \newpage
+%~ \tableofcontents
+
+\newchapter{description}
+\newchapter{grass}
+\newchapter{frustum}
+\newchapter{effects}
+\newchapter{conclusions}
+%%::chapters::%%
+
+%% Include all appendices
+\appendix
+
+%%::appendices::%%
+
+\end{document}

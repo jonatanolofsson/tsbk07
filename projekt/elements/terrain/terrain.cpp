@@ -104,14 +104,21 @@ namespace CPGL {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*(X-1)*(Z-1) * sizeof(GLuint), NULL, GL_DYNAMIC_DRAW);
         cl_indices = clProgram.bind_gl_vbo(indices_id);
         generate_indices.set_arg<0>(cl_indices);
+
+        glGenBuffers(1, &grass_indices_id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, grass_indices_id);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*(X-1)*(Z-1) * sizeof(GLuint), NULL, GL_DYNAMIC_DRAW);
+        cl_grass_indices = clProgram.bind_gl_vbo(grass_indices_id);
+        generate_indices.set_arg<1>(cl_grass_indices);
         std::cout << "Generated terrain" << std::endl;
     }
 
     void get_limits(Vector4f z, const int order_offset, const int Zmax, int& top, int& bottom) {
+        //~ std::cout << "Incoming z: " << z.transpose() << std::endl;
         std::sort(z.data(), z.data()+4);
         bottom = std::max(0, (int)std::floor(z(order_offset)) - extra);
         top = std::min(Zmax, (int)std::ceil(z(order_offset+1)) + extra);
-        //~ std::cout << "Get limits from z: " << z.transpose() << " using offset " << order_offset << " :: [" << bottom << "," << top << "]" << std::endl;
+        //~ std::cout << "Get limits from z: " << z.transpose() << " using offset " << order_offset << " and " << extra << " extra. :: 0 <= [" << bottom << "," << top << "] <= " << Zmax << std::endl;
     }
 
     int Terrain::frustum_culling() {
@@ -136,6 +143,7 @@ namespace CPGL {
             frustum_Frustum.row(1) -= 2.0 * x.row(1);
             x = baselu.solve(frustum_Frustum);
         }
+        //~ std::cout << "Finished " << count << " iterations" << std::endl;
 
         for(int i = 0; i < 4; ++i) x.col(i).array() /= x(3,i);
         //~ std::cout << " x : " << std::endl << x << std::endl;
@@ -164,7 +172,8 @@ namespace CPGL {
 
         //~ std::cout << "Step 2:1" << std::endl;
         static const int CORNER_INDEX[5] = {0, 1, 2, 3, 0};
-        int order_offset = (Z(0,0) > Z(0,3)) + (Z(0,2) > Z(0,1));
+        int order_offset = int(Z(0,0) > Z(0,3)) + int(Z(0,2) > Z(0,1));
+        //~ std::cout << "Order offset: " << order_offset << std::endl;
         for(int i = 0; i < 4; ++i) {
             delta = Z.col(CORNER_INDEX[i+1]) - Z.col(CORNER_INDEX[i]);
             //~ std::cout << "Using delta: " << delta.transpose() << std::endl;
@@ -185,6 +194,7 @@ namespace CPGL {
 
         //~ std::cout << "Step 2:2" << std::endl;
         generate_indices.acquire_gl(&cl_indices);
+        generate_indices.acquire_gl(&cl_grass_indices);
 
         //~ std::cout << "Step 2:3" << std::endl;
 
@@ -192,7 +202,7 @@ namespace CPGL {
             get_limits(zx, order_offset, terrain_size_Z-1, top, bottom);
             N_add = top-bottom;
 
-            //~ std::cout << "generate_terrain(*, " << N << ", " << bottom << ", " << xi << ", " << terrain_size_Z << ")" << " :: Sweep at x=" << xi << ", adding " << N_add << ". Using limits: [" << bottom << ", " << top << "]" << std::endl;
+            //~ std::cout << "generate_terrain(*,*, " << N << ", " << bottom << ", " << xi << ", " << terrain_size_Z << ")" << " :: Sweep at x=" << xi << ", adding " << N_add << ". Using limits: [" << bottom << ", " << top << "]" << std::endl;
             if(N_add <= 0) continue;
             if(N_add > 1e5) {
                 std::cout << "Tried to add " << N_add << " triangles. Don't. " << std::endl;
@@ -203,30 +213,35 @@ namespace CPGL {
             }
             generate_indices.local_work_size[0] = N_add;
             generate_indices.global_work_size[0] = N_add;
-            generate_indices.set_arg<1>(N);
-            generate_indices.set_arg<2>(bottom);
-            generate_indices.set_arg<3>(xi);
+            generate_indices.set_arg<2>(N);
+            generate_indices.set_arg<3>(bottom);
+            generate_indices.set_arg<4>(xi);
+            //~ std::cout << "Run the kernel: " << generate_indices.local_work_size[0] << ", " << generate_indices.global_work_size[0] << std::endl;
             generate_indices();
         generate_indices.finish();
             zx += dx;
             N += N_add;
         }
+        //~ std::cout << "Displaying " << N << " squares" << std::endl;
 
         //~ std::cout << "Step 2:4" << std::endl;
         generate_indices.finish();
 
         //~ std::cout << "Step 2:5" << std::endl;
+        generate_indices.release_gl(&cl_grass_indices);
         generate_indices.release_gl(&cl_indices);
 
         return 2*N;
     }
 
     void Terrain::draw_grass(const int numSeeds) {
+//~ std::cout << "Draw grass: " << numSeeds << std::endl;
         static float time = 0;
         time += 0.05;
         GLfloat windforce = std::sin(time);
 
         glUseProgram(program[PROGRAM_GRASS]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, grass_indices_id);
 
         glEnable(GL_DEPTH_TEST);
 
@@ -249,7 +264,7 @@ namespace CPGL {
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture[TEXTURE_GRASS_MASK]);
-
+//~ std::cout << "Number of seeds: " << numSeeds << std::endl;
         glDrawArrays(GL_POINTS, 0, numSeeds);
 
         glDisable(GL_DEPTH_TEST);
@@ -257,6 +272,7 @@ namespace CPGL {
 
     void Terrain::draw_ground(const int number_of_visible_triangles) {
         glUseProgram(program[PROGRAM_TERRAIN]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
 
         //FIXME: Remove?
         //~ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
@@ -303,7 +319,7 @@ namespace CPGL {
         program[PROGRAM_TERRAIN]    = tools::load_shaders("terrain", "terrain.vert", "terrain.frag");
         generate_terrain<terrain_size_X, terrain_size_Z>(heightmap);
         generate_indices.global_work_size[0] = 1;
-        generate_indices.set_arg<4>(terrain_size_Z);
+        generate_indices.set_arg<5>(terrain_size_Z);
 
         texture[TEXTURE_TERRAIN]        = tools::load_texture("terrain", config["textures"]["terrain"].as<std::string>("grass.tga"), GL_TEXTURE0, true);
         glUniform1i(glGetUniformLocation(program[PROGRAM_TERRAIN], "tex"), 0); // Texture unit 0

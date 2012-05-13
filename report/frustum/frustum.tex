@@ -1,0 +1,47 @@
+\section{Frustum}
+\label{cha:frustum}
+To reduce the computational load, a technique called \textit{frustum culling}
+was studied and implemented. The idea is to render only the parts of the
+world that are inside the visible frustum.
+In this project, the focus of the frustum culling was the terrain and grass.
+Since both these are present on the ground level, we can limit the culling
+to this plane. By imposing certain restrictions on the orientation of the viewing frustum,
+we can map the corners of the frustum-intersecting ground plane to world coordinates.
+Since we know the ground plane in world coordinates and the frustum bounding box in
+frustum coordinates, we need to solve the multi-dimensional two-point boundary-value problem in \eqref{eq:twopoint}.
+\begin{equation}
+    \label{eq:twopoint}
+    \left(
+\begin{array}{cccc}
+x_{00} & x_{01} & x_{02} & x_{03} \\
+* & * & * & * \\
+x_{20} & x_{21} & x_{22} & x_{23} \\
+x_{30} & x_{31} & x_{32} & x_{33}
+\end{array}
+\right ) =
+\left(
+\begin{array}{cccc}
+A_{00} & A_{01} & A_{02} & A_{03} \\
+A_{10} & A_{11} & A_{12} & A_{13} \\
+A_{20} & A_{21} & A_{22} & A_{23} \\
+A_{30} & A_{31} & A_{32} & A_{33}
+\end{array}
+\right )
+\left(
+\begin{array}{cccc}
+* & * & * & * \\
+y_{10} & y_{11} & y_{12} & y_{13} \\
+* & * & * & * \\
+* & * & * & *
+\end{array}
+\right )
+\end{equation}
+The system of equations in \eqref{eq:twopoint} is easily solved numerically,
+yielding world coordinates which can be mapped to the terrain, as visualized in \ref{fig:fculling}.
+\figw{fculling}{Frustum culling visualized from above.}{fig:fculling}
+
+The extracted corners were then used to do a single-dimension sweep in the x-axis; from the leftmost corner of the visible terrain, to the rightmost.
+For each x-coordinate, an OpenCL step was applied to extract all the visible indices with that coordinate.
+Doing this in OpenGL memory-space ment that a minimal amount of data had to be copied before the
+final rendering stage, when a single OpenGL call could render the full visible world, thanks to
+the inherent sorting of the OpenCL pre-processing stage.
