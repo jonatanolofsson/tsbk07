@@ -18,7 +18,7 @@ random phase offset from the applied wind sinusoid.
 This causes each strain to move independently, without removing the sense
 that all strains are moved by a common wind.
 
-%~ \fig{0.3}{strain}{Grass strains are built of two parallell strips of triangles to create a 3D-effect.}{strain}
+\fig{0.3}{grasspic}{Grass strains are built of two parallell strips of triangles to create a 3D-effect.}{strain}
 
 Depending on the distance between the generated grass strain and the camera,
 different level of details are selected for the grass, to reduce computational
@@ -32,6 +32,6 @@ The tint of the grass can be adjusted individually and every grass is given a di
 
 To make the grass appear shaped like grass and not rectangles, a masking texture is applied to each strain to make the top appear rounded off. Thanks to the discard keyword in GLSL we can get the effect of transparency without disabling the hardware Z depth test.
 
-%~ \fig{0.8}{grass1}{Grass strains, bent to the applied wind.}{grass1}
+\fig{0.8}{grass}{Grass strains, bent to the applied wind.}{grass1}
 
 

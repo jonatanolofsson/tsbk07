@@ -37,8 +37,8 @@ y_{10} & y_{11} & y_{12} & y_{13} \\
 \right )
 \end{equation}
 The system of equations in \eqref{eq:twopoint} is easily solved numerically,
-yielding world coordinates which can be mapped to the terrain, as visualized in \ref{fig:fculling}.
-\figw{fculling}{Frustum culling visualized from above.}{fig:fculling}
+yielding world coordinates which can be mapped to the terrain, as visualized in Figure \ref{fig:fculling}.
+\fig{0.6}{fculling}{Frustum culling visualized from above.}{fig:fculling}
 
 The extracted corners were then used to do a single-dimension sweep in the x-axis; from the leftmost corner of the visible terrain, to the rightmost.
 For each x-coordinate, an OpenCL step was applied to extract all the visible indices with that coordinate.

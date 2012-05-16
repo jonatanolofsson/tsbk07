@@ -4,6 +4,16 @@
 To enhance the final picture, different post processing effects are often used.
 In this project, two different effects were implemented to increase the quality of the demo.
 
-First, to increase the natural feel of the environment a fog is applied. During the inital rendering, a separate renderbuffer is used to store the world coordinates of every pixel. This value is then used to calculate how far away from the camera the pixel is and how much fog should be applied.
+First, to increase the natural feel of the environment a fog is applied.
+During the inital rendering, a separate renderbuffer is used to store the
+world coordinates of every pixel. This value is then used to calculate how
+far away from the camera the pixel is and how much fog should be applied.
+\fig{0.6}{simplefog}{Simple fog rendering.}{fig:simplefig}
 
-Secondly, to emulate depth of field a guassian blurr is applied to a copy of the offscreen rendering result. This blurred images is then interpolated with the original with a factor depending on the distance of the pixel to the focal plane. This enables us to make the scene appear blurry where it should be out of focus. 
+Secondly, to emulate depth of field a guassian blur is applied to a copy
+of the offscreen rendering result. This blurred images is then interpolated
+with the original image using a factor depending on the distance of the pixel
+to the focal plane.
+This enables us to make the scene appear blurry where it should be out of focus.
+\fig{0.6}{depthUnit}{Visualization of FBO debug data through colors.}{fig:depthunit}
+\fig{0.6}{distance}{Distance from camera visualized through coloring.}{fig:distance}
